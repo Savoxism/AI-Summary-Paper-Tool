@@ -1,12 +1,19 @@
 from sentence_transformers import SentenceTransformer
+import google.generativeai as genai
 import chromadb
+import os
+# embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 client = chromadb.PersistentClient(path="chroma_db")
 collection = client.get_or_create_collection(name="paper_summaries")
 
 def generate_embedding(text):
-    return embedding_model.encode(text).tolist()
+    result = genai.embed_content(
+        model="models/text-embedding-004",
+        content=text
+    )
+    return result['embedding']
 
 def store_summary_in_db(title, summary):
     try:

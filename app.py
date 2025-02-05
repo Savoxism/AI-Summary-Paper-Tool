@@ -1,12 +1,15 @@
 import streamlit as st
-from search_papers222 import search_papers, process_paper
+from searcher import search_papers, process_paper
 from vector_db import search_similar_summaries
-from summarize_text import model
+from summarizer import model
 
-
-# Initialize session state for chat history
+# Initialize session state for chat history and selected paper
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+if "selected_paper" not in st.session_state:
+    st.session_state.selected_paper = None
+if "papers" not in st.session_state:
+    st.session_state.papers = []
 
 st.set_page_config(page_title="Paper Summarizer", page_icon="📚")
 st.title("📄 Paper Summarizer with arXiv")
@@ -17,32 +20,39 @@ query = st.text_input("Enter the title or topic of a research paper:")
 if st.button("Search"):
     if query:
         with st.spinner("Searching for relevant papers..."):
-            papers = search_papers(query)
+            st.session_state.papers = search_papers(query)  # Store papers in session state
         
-        if papers:
-            st.success(f"Found {len(papers)} relevant papers.")
-            
-            # Display the list of papers and let the user choose one
-            paper_titles = [paper["title"] for paper in papers]
-            selected_title = st.selectbox("Select a paper to analyze:", paper_titles)
-            
-            # Find the selected paper
-            selected_paper = next(paper for paper in papers if paper["title"] == selected_title)
-            
-            # Process the selected paper
-            if st.button("Download and Summarize"):
-                with st.spinner(f"Downloading and summarizing '{selected_title}'..."):
-                    summary = process_paper(selected_paper["title"], selected_paper["url"])
-                
-                if summary:
-                    st.success(f"Summary for '{selected_title}' generated successfully!")
-                    st.markdown(f"**Title:** {selected_paper['title']}")
-                    st.markdown(f"**Published Date:** {selected_paper['published_date']}")
-                    st.markdown(f"**Summary:**\n{summary}")
-                else:
-                    st.error(f"Failed to process '{selected_title}'. Please try again.")
+        if st.session_state.papers:
+            st.success(f"Found {len(st.session_state.papers)} relevant papers.")
         else:
             st.error("No relevant papers found. Please refine your query.")
+
+# Display the dropdown only if papers are found
+if st.session_state.papers:
+    paper_titles = [paper["title"] for paper in st.session_state.papers]
+    selected_title = st.selectbox("Select a paper to analyze:", paper_titles)
+
+    # Update the selected_paper in session state when the user selects a new paper
+    if st.session_state.selected_paper is None or st.session_state.selected_paper["title"] != selected_title:
+        st.session_state.selected_paper = next(paper for paper in st.session_state.papers if paper["title"] == selected_title)
+        st.success(f"Selected paper: {st.session_state.selected_paper['title']}")
+
+# If a paper has been selected, allow the user to download and summarize it
+if st.session_state.selected_paper:
+    selected_paper = st.session_state.selected_paper
+
+    if st.button("Download and Summarize"):
+        with st.spinner(f"Downloading and summarizing '{selected_paper['title']}'..."):
+            summary = process_paper(selected_paper["title"], selected_paper["url"])
+        
+        if summary:
+            st.success(f"Summary for '{selected_paper['title']}' generated successfully!")
+            st.success(f"**Author:** {selected_paper['author']}")
+            st.markdown(f"**Title:** {selected_paper['title']}")
+            st.markdown(f"**Published Date:** {selected_paper['published_date']}")
+            st.markdown(f"**Summary:**\n{summary}")
+        else:
+            st.error(f"Failed to process '{selected_paper['title']}'. Please try again.")
 
 # Search for similar summaries
 st.subheader("Search for Similar Summaries")
