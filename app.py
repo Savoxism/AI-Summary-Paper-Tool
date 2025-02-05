@@ -28,7 +28,6 @@ if uploaded_file:
         chat_history, summary = summarize_text(file_path, title, st.session_state.chat_history)
         st.session_state.chat_history = chat_history  # Update the chat history
     
-    # Remove the temporary file
     os.remove(file_path)
     
     # Display the summary
@@ -40,15 +39,12 @@ st.subheader("Ask Follow-Up Questions")
 user_input = st.text_input("Enter your question:")
 
 if user_input:
-    # Start a chat session with the current chat history
     chat_session = model.start_chat(history=st.session_state.chat_history)
     
-    # Send the user's question to the model
     with st.spinner("Generating response..."):
         response = chat_session.send_message(user_input)
         st.session_state.chat_history = chat_session.history  # Update the chat history
     
-    # Display the model's response
     st.subheader("Response")
     st.markdown(response.text)
 

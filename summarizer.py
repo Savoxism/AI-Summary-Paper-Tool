@@ -1,9 +1,10 @@
 import os
 import google.generativeai as genai 
 from dotenv import load_dotenv
-from vector_db import store_summary_in_db
 
 load_dotenv()
+
+# GOOGLE_API_KEY=AIzaSyCVQM4930V4nLP8h7TF2IG9QrKr7zhFHPw
 genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
 
 generation_config = {

@@ -5,7 +5,6 @@ embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 client = chromadb.PersistentClient(path="chroma_db")
 
-# Create or load a collection
 collection = client.get_or_create_collection(name="paper_summaries")
 
 def generate_embedding(text):
@@ -13,9 +12,7 @@ def generate_embedding(text):
 
 def store_summary_in_db(title, summary):
     try:
-        # Generate the embedding for the summary
-        embedding = generate_embedding(summary)
-        # Add the summary, metadata, and ID to the Chroma collection
+        embedding = generate_embedding(summary) # document emnbedding
         collection.add(
             documents=[summary],
             metadatas=[{"title": title}],
@@ -29,7 +26,6 @@ def store_summary_in_db(title, summary):
         raise ValueError(f"Failed to store summary for '{title}'. Error: {str(e)}")
 
 def search_similar_summaries(query, n_results=3):
-    """Search for similar summaries in the vector database."""
     query_embedding = generate_embedding(query)
     results = collection.query(
         query_embeddings=[query_embedding],
