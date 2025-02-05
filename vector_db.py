@@ -2,9 +2,7 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-
 client = chromadb.PersistentClient(path="chroma_db")
-
 collection = client.get_or_create_collection(name="paper_summaries")
 
 def generate_embedding(text):
@@ -12,14 +10,13 @@ def generate_embedding(text):
 
 def store_summary_in_db(title, summary):
     try:
-        embedding = generate_embedding(summary) # document emnbedding
+        embedding = generate_embedding(summary)
         collection.add(
             documents=[summary],
             metadatas=[{"title": title}],
             ids=[title],
             embeddings=[embedding]
-        )     
-        
+        )
         return f"Summary for '{title}' successfully stored in the database."
     except Exception as e:
         print(f"Error storing summary in the database: {str(e)}")
