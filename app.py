@@ -47,8 +47,8 @@ if st.session_state.selected_paper:
         
         if summary:
             st.success(f"Summary for '{selected_paper['title']}' generated successfully!")
-            st.success(f"**Author:** {selected_paper['author']}")
             st.markdown(f"**Title:** {selected_paper['title']}")
+            st.markdown(f"**Author:** {', '.join(selected_paper['authors'])}")
             st.markdown(f"**Published Date:** {selected_paper['published_date']}")
             st.markdown(f"**Summary:**\n{summary}")
         else:
@@ -59,7 +59,7 @@ st.subheader("Search for Similar Summaries")
 search_query = st.text_input("Enter a query to find similar summaries:")
 if search_query:
     with st.spinner("Searching..."):
-        results = search_similar_summaries(search_query, n_results=3)
+        results = search_similar_summaries(search_query, n_results=1)
         st.write("Similar Summaries:")
         for i, doc in enumerate(results["documents"][0]):
             st.markdown(f"**Result {i+1}:**")
